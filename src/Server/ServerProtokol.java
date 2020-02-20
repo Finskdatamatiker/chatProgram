@@ -6,8 +6,6 @@ public class ServerProtokol {
 
     }
 
-
-
     public String[] laesJoinOgSplit(String besked) {
         String username = "";
         String serverIp = "";

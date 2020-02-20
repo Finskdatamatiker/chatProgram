@@ -11,7 +11,8 @@ public class ClientAfsenderThread implements Runnable {
 
     private String username;
     private int serverPort;
-    private InetAddress serverIp;
+    //localHost
+    private final String serverIp = "127.0.0.1";
     private Socket clientSocket;
     private ClientProtokol clientProtokol;
     private Forbindelse forb;
@@ -24,8 +25,8 @@ public class ClientAfsenderThread implements Runnable {
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
     public int getServerPort() { return serverPort; }
-    public InetAddress getServerIp() { return serverIp; }
-    public void setServerIp(InetAddress serverIp) { this.serverIp = serverIp; }
+    public String getServerIp() { return serverIp; }
+
     public Socket getClientSocket() { return clientSocket; }
     public void setClientSocket(Socket clientSocket) { this.clientSocket = clientSocket; }
     public void setServerPort(int serverPort) { this.serverPort = serverPort; }
@@ -68,9 +69,12 @@ public class ClientAfsenderThread implements Runnable {
                      username = consoleReader.laesInputFraConsole();
                  }
 
-
                  String serverIP = joinGemtIArray[1];
-                 serverIp = InetAddress.getByName(serverIP);
+                 while(!serverIP.equals(serverIp)){
+                     System.out.println("Ugyldigt serverIP, prøv igen");
+                     serverIP = consoleReader.laesInputFraConsole();
+                 }
+
                  serverPort = Integer.parseInt(joinGemtIArray[2]);
 
                  clientSocket = new Socket(serverIp, serverPort);
@@ -84,7 +88,7 @@ public class ClientAfsenderThread implements Runnable {
                  Thread modtagerThread = new Thread(clientModtagerThread);
                  modtagerThread.start();
                  //korjaa tämä ,jos alkaa toimia....
-                 String join = "JOIN " + username + ", " + serverIP + ":" + serverPort;
+                 String join = "JOIN " + username + ", " + serverIp + ":" + serverPort;
                  forb.getDataOutputStream().writeUTF(join);
                  forb.getDataOutputStream().flush();
 

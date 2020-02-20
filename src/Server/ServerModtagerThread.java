@@ -6,10 +6,12 @@ public class ServerModtagerThread implements Runnable {
 
     private ServerForbindelse sforb;
     private ClientCoordinator clientCoordinator;
+    private LogBog logBog;
 
     public ServerModtagerThread(ServerForbindelse sforb, ClientCoordinator clientCoordinator){
         this.sforb = sforb;
         this.clientCoordinator = clientCoordinator;
+        logBog = new LogBog();
     }
 
     public ServerForbindelse getSforb() {
@@ -34,6 +36,7 @@ public class ServerModtagerThread implements Runnable {
             try{
                 while(true) {
                     String beskedFraKlient = sforb.getDataInputStream().readUTF();
+                    logBog.addModtagenTransaktion(beskedFraKlient);
                     clientCoordinator.behandlBesked(beskedFraKlient);
                 }
             }catch (IOException io){

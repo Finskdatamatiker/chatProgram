@@ -3,10 +3,7 @@ package Server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,8 +14,8 @@ public class Listener implements Runnable {
     private static final int PORT = 2000;
     //jeg skal 5 klienter, som hver skal have tre tråde: (en lytter, en sender, en lytter til heartbeat), så 15 i alt
     public static final int MAXTHREADS = 15;
-    //set for ikke at have dublikater - men jeg tjekker det også, hmm....
-    public static List<Bruger> brugere = new ArrayList<Bruger>();
+    //vector er thread-sikker
+    public static Vector<Bruger> brugere = new Vector<>();
     private ServerSocket serverSocket;
     private ExecutorService minThreadPool;
 

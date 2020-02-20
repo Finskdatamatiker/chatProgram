@@ -12,12 +12,14 @@ public class ClientCoordinator implements Runnable {
     private ServerForbindelse sforb;
     private Socket socket;
     private ServerProtokol protokol;
+    private LogBog logBog;
 
 
     public ClientCoordinator(ServerForbindelse sforb, Socket socket, ServerProtokol protokol){
         this.sforb = sforb;
         this.socket = socket;
         this.protokol = protokol;
+        logBog = new LogBog();
     }
 
     public ServerForbindelse getSforb() {
@@ -69,9 +71,12 @@ public class ClientCoordinator implements Runnable {
                     String brugernavn = erDenData[0];
                     String beskedTilAlle = erDenData[1];
 
+                    //besked, som sendes til alle
                     for (Bruger b : Listener.brugere) {
+                        String beskeden = brugernavn + " sender besked: " + beskedTilAlle;
+                        logBog.addAfsendtTransaktion(beskeden);
                         if (!b.getBrugernavn().equals(brugernavn))
-                        b.getClientCoordinator().sendBeskedTilKlient(brugernavn + " sender besked: " + beskedTilAlle);
+                        b.getClientCoordinator().sendBeskedTilKlient(beskeden);
                     }
                 }
             } else if (beskedFraKlient.equals("QUIT")) {
@@ -93,7 +98,7 @@ public class ClientCoordinator implements Runnable {
             } else {
                 svar = "J_ER err_code: err_msg";
             }
-
+            //svar til kunden ifølge protokollen
             sendBeskedTilKlient(svar);
         }
 
@@ -102,6 +107,7 @@ public class ClientCoordinator implements Runnable {
         public void sendBeskedTilKlient (String beskedTilKlient){
             try {
                 sforb.getDataOutputStream().writeUTF(beskedTilKlient);
+                logBog.addAfsendtTransaktion(beskedTilKlient);
                 sforb.getDataOutputStream().flush();
             } catch (IOException io) {
                 System.out.println(io);
