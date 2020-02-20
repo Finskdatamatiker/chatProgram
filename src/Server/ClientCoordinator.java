@@ -114,7 +114,7 @@ public class ClientCoordinator implements Runnable {
                 Bruger bruger = new Bruger(navn, this);
                 Listener.brugere.add(bruger);
                 for (Bruger b : Listener.brugere) {
-                    b.getClientCoordinator().sendBeskedTilKlient("Aktive brugere: " + Listener.brugere.toString());
+                    b.getClientCoordinator().sendBeskedTilKlient("LIST " + Listener.brugere.toString());
                 }
             } else {
                 sendBeskedTilKlient("J_ER err_code: err_msg");

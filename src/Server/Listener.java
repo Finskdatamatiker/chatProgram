@@ -18,7 +18,6 @@ public class Listener implements Runnable {
     //jeg skal 5 klienter, som hver skal have tre tråde: (en lytter, en sender, en lytter til heartbeat), så 15 i alt
     public static final int MAXTHREADS = 15;
     //set for ikke at have dublikater - men jeg tjekker det også, hmm....
-
     public static List<Bruger> brugere = new ArrayList<Bruger>();
     private ServerSocket serverSocket;
     private ExecutorService minThreadPool;
