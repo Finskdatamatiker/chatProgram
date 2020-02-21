@@ -1,7 +1,6 @@
 package Client;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 
 public class ClientAfsenderThread implements Runnable {
@@ -10,7 +9,8 @@ public class ClientAfsenderThread implements Runnable {
      */
 
     private String username;
-    private int serverPort;
+    //String, fordi scanneren læser hele input som String, så det er nemmest også at læse serverPort som en String
+    private final String serverPort = "2000";
     //localHost
     private final String serverIp = "127.0.0.1";
     private Socket clientSocket;
@@ -24,21 +24,17 @@ public class ClientAfsenderThread implements Runnable {
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
-    public int getServerPort() { return serverPort; }
+    public String getServerPort() { return serverPort; }
     public String getServerIp() { return serverIp; }
-
     public Socket getClientSocket() { return clientSocket; }
     public void setClientSocket(Socket clientSocket) { this.clientSocket = clientSocket; }
-    public void setServerPort(int serverPort) { this.serverPort = serverPort; }
     public ClientProtokol getClientProtokol() { return clientProtokol; }
     public void setClientProtokol(ClientProtokol clientProtokol) { this.clientProtokol = clientProtokol; }
     public Forbindelse getForb() { return forb; }
     public void setForb(Forbindelse forb) { this.forb = forb; }
-
     public SendHeartBeat getSendHeartBeat() {
         return sendHeartBeat;
     }
-
     public void setSendHeartBeat(SendHeartBeat sendHeartBeat) {
         this.sendHeartBeat = sendHeartBeat;
     }
@@ -56,38 +52,32 @@ public class ClientAfsenderThread implements Runnable {
                  clientProtokol = new ClientProtokol(consoleReader);
                  String[] joinGemtIArray = clientProtokol.laesJoinOgSplit();
 
-
-                 while (joinGemtIArray == null) {
-                     System.out.println("Husk protokollen: JOIN username, serverIP:serverPort");
-                     joinGemtIArray = clientProtokol.laesJoinOgSplit();
-                 }
-
                  username = joinGemtIArray[0];
-
-                 while (!clientProtokol.erGyldigBrugernavn(username)) {
-                     System.out.println("Ugyldigt brugernavn, prøv igen");
-                     username = consoleReader.laesInputFraConsole();
-                 }
-
                  String serverIP = joinGemtIArray[1];
-                 while(!serverIP.equals(serverIp)){
-                     System.out.println("Ugyldigt serverIP, prøv igen");
-                     serverIP = consoleReader.laesInputFraConsole();
-                 }
+                 String serverPorten = joinGemtIArray[2];
 
-                 serverPort = Integer.parseInt(joinGemtIArray[2]);
+                  while(username.equals("FEJL") || !clientProtokol.erGyldigBrugernavn(username) || !serverIP.equals(serverIp) || !serverPorten.equals(serverPort)){
+                         System.out.println("Husk protokollen: JOIN username, serverIP:serverPort");
+                         joinGemtIArray = clientProtokol.laesJoinOgSplit();
+                         username = joinGemtIArray[0];
+                         serverIP = joinGemtIArray[1];
+                         serverPorten = joinGemtIArray[2];
+                  }
 
-                 clientSocket = new Socket(serverIp, serverPort);
-                 forb = new Forbindelse(clientSocket);
+                 clientSocket = new Socket(serverIp, Integer.parseInt(serverPorten));
+                 forb = Forbindelse.givForbindelse(clientSocket);
 
+                 //laver tråd for heartbeat
                  sendHeartBeat = new SendHeartBeat(forb, true, username);
                  Thread sendHeartBeatTHread = new Thread(sendHeartBeat);
                  sendHeartBeatTHread.start();
 
+                 //laver tråd, der modtager beskeder fra serveren
                  ClientModtagerThread clientModtagerThread = new ClientModtagerThread(forb);
                  Thread modtagerThread = new Thread(clientModtagerThread);
                  modtagerThread.start();
-                 //korjaa tämä ,jos alkaa toimia....
+
+                 //Tjekket JOIN, som "samles" igen og sendes til serveren
                  String join = "JOIN " + username + ", " + serverIp + ":" + serverPort;
                  forb.getDataOutputStream().writeUTF(join);
                  forb.getDataOutputStream().flush();
@@ -96,50 +86,41 @@ public class ClientAfsenderThread implements Runnable {
                  System.out.println(ue);
              }
 
-
          //hvad skal betingelsen være her?
-         while (true/*ClientMain2.clientRunning*/) {
+         while (true) {
 
-             String besked = "";
-             do {
-                 System.out.println(username + ", skriv en ny besked således:  DATA username: besked");
+                 System.out.println("Indtast en ny besked, " + username);
                  String[] beskedIArray = clientProtokol.laesDataOgSplit();
 
-                 if (beskedIArray[0].equals("QUIT")) {
-                     forb.lukForbindelse();
+                 String user = beskedIArray[0];
+                 String besked = beskedIArray[1];
+
+                 if (besked.equals("QUIT")) {
+                     try {
+                         forb.getDataOutputStream().writeUTF("QUIT");
+                         break;
+                     }catch (IOException io){
+                         System.out.println(io);
+                     }
                  }
-                 //tjek dette
-                 while (beskedIArray == null) {
-                     System.out.println("Husk at max 250 tegn og og husk protokollen: DATA username: besked");
+
+                 while (!user.equals(username) || besked.equals("FEJL")) {
+                     System.out.println("Husk protokollen: DATA brugernavn: besked");
                      beskedIArray = clientProtokol.laesDataOgSplit();
+                     user = beskedIArray[0];
+                     besked = beskedIArray[1];
                  }
 
-                 String usernameArray = beskedIArray[0];
-                 besked = beskedIArray[1];
-
-
-                 while (!usernameArray.equals(username)) {
-                     System.out.println("Fejl i protokol");
-                     String[] nyBesked = clientProtokol.laesDataOgSplit();
-                     besked = nyBesked[1];
-                     usernameArray = nyBesked[0];
-                 }
-
-                 String sendBesked = "DATA " + usernameArray + ": " + besked;
+                 String sendBeskedTilServer = "DATA " + user + ": " + besked;
 
                  try {
                      sendHeartBeat.setHeartbeat(true);
-                     forb.getDataOutputStream().writeUTF(sendBesked);
+                     forb.getDataOutputStream().writeUTF(sendBeskedTilServer);
                      forb.getDataOutputStream().flush();
-
 
                  } catch (IOException io) {
                      System.out.println(io);
                  }
-
-             } while (!besked.equals("QUIT"));
-
-
 
          }
 

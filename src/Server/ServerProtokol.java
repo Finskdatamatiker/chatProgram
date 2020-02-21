@@ -2,57 +2,53 @@ package Server;
 
 public class ServerProtokol {
 
-    public ServerProtokol(){
+    /**
+     * ServerProkokollen er en den samme som hos klienten, men jeg vil holde packages adskilte.
+     */
 
-    }
+    public ServerProtokol(){}
 
     public String[] laesJoinOgSplit(String besked) {
         String username = "";
         String serverIp = "";
         String serverPort = "";
-        String[] gemtIArray;
+        String[] gemtIArray = new String[3];
 
-        if(!besked.contains("JOIN")){
-            return null;
-        }
-
-        //jeg fjerner ordet JOIN og mellemrum fra beskeden, hvis der er JOIN
-        if (besked.indexOf("JOIN") == 0) {
-            besked = besked.replace("JOIN ", "");
-        }
-
-        //Når jeg adskiller med komma, får jeg username på den første plads
-        if (besked.contains(",")) {
-            gemtIArray = besked.split(",");
-            username = gemtIArray[0];
-        }
-
-        /*Når jeg adskiller med :, får jeg serverPort på den anden plads*/
-        if (besked.contains(":")) {
-            gemtIArray = besked.split(":");
-            serverPort = gemtIArray[1];
-        }
-
-        /* Får at få server_ip, skal jeg først adskiller med mellemrum
-        og det element derefter med :*/
-        if (besked.contains(" ")) {
-            gemtIArray = besked.split(" ");
-            besked = gemtIArray[1];
-            //nu er der kun serverIp:serverPort tilbage af beskeden
-            gemtIArray = besked.split(":");
-            serverIp = gemtIArray[0];
+        if (besked.length() < 5 || !besked.substring(0,5).equals("JOIN ")) {
+            gemtIArray[0] = "FEJL";
+            gemtIArray[1] = "FEJL";
+            gemtIArray[2] = "FEJL";
+            return gemtIArray;
         }
         else{
-            return null;
+            if (besked.indexOf("JOIN ") == 0) {
+                besked = besked.replace("JOIN ", "");
+            }
+            if (besked.contains(",")) {
+                gemtIArray = besked.split(",");
+                username = gemtIArray[0];
+            }
+            if (besked.contains(":")) {
+                gemtIArray = besked.split(":");
+                serverPort = gemtIArray[1];
+            }
+            if (besked.contains(" ")) {
+                gemtIArray = besked.split(" ");
+                besked = gemtIArray[1];
+                //nu er der kun serverIp:serverPort tilbage af beskeden
+                gemtIArray = besked.split(":");
+                serverIp = gemtIArray[0];
+            }
+
+            //alle info samlet i array
+            String[] infoFraJoin = new String[3];
+            infoFraJoin[0] = username;
+            infoFraJoin[1] = serverIp;
+            infoFraJoin[2] = serverPort;
+
+            return infoFraJoin;
         }
 
-        //alle info samlet i array
-        String[] infoFraJoin = new String[3];
-        infoFraJoin[0] = username;
-        infoFraJoin[1] = serverIp;
-        infoFraJoin[2] = serverPort;
-
-        return infoFraJoin;
     }
 
     public boolean erGyldigBrugernavn(String brugernavn){
@@ -65,46 +61,20 @@ public class ServerProtokol {
 
     public String[] laesDataOgSplit(String besked) {
 
-        String username = "";
-        String beskeden = "";
-        String[] gemtIArray;
+        String[] gemtIArray = new String[2];
 
-        if(!besked.contains("DATA")){
-            return null;
+        if (besked.length() < 5 || !besked.substring(0,5).equals("DATA ") || besked.length() > 250 || !besked.contains(":")) {
+            gemtIArray[0] = "FEJL";
+            gemtIArray[1] = "FEJL";
         }
+        else {
 
-        //jeg fjerner ordet DATA og mellemrum fra beskeden, hvis der er JOIN
-        if (besked.indexOf("DATA") == 0) {
             besked = besked.replace("DATA ", "");
-        }
+            if (besked.contains(":")) gemtIArray = besked.split(":");
 
-        //Når jeg adskiller med komma, får jeg username på den første plads
-        if (besked.contains(":")) {
-            gemtIArray = besked.split(":");
-            username = gemtIArray[0];
-            beskeden = gemtIArray[1];
         }
-
-        else{
-            return null;
-        }
-
-        String[] infoFraData = new String[2];
-        infoFraData[0] = username;
-        infoFraData[1] = beskeden;
-        return infoFraData;
+        return gemtIArray;
 
     }
 
-    public boolean erGyldigBesked(String besked){
-        if(besked.length() <= 250){
-            return true;
-        }
-        return false;
-    }
-
-    public String udregnNavnet(String beskedFraKlient){
-        String navnUdenHeartBeat = beskedFraKlient.substring(0, beskedFraKlient.length()-7);
-        return navnUdenHeartBeat;
-    }
 }

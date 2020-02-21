@@ -17,15 +17,12 @@ public class SendHeartBeat implements Runnable {
     public boolean isHeartbeat() {
         return heartbeat;
     }
-
     public void setHeartbeat(boolean heartbeat) {
         this.heartbeat = heartbeat;
     }
-
     public String getNavnUdenHeartBeat() {
         return navnet;
     }
-
     public void setNavnUdenHeartBeat(String navnet) {
         this.navnet = navnet;
     }
@@ -40,8 +37,9 @@ public class SendHeartBeat implements Runnable {
                         forb.getDataOutputStream().writeUTF("IMAV");
                         heartbeat = false;}
                         else{
-                            forb.getDataOutputStream().writeUTF(navnet + "NO_IMAV");
+                            forb.getDataOutputStream().writeUTF("NO_IMAV");
                             System.out.println("ingen heartbeat længere");
+                            System.exit(0);
                         };
                     }catch (IOException io){
                         System.out.println("Forbindelsen lukkes " + io);
@@ -50,7 +48,7 @@ public class SendHeartBeat implements Runnable {
             }
 
         }catch (InterruptedException ie){
-            System.out.println("afbrudt søvn i heartbeat " + ie);
+            System.out.println("Afbrudt søvn i heartbeat " + ie);
             Thread.currentThread().interrupt();
         }
     }

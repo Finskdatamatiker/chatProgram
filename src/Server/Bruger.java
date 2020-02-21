@@ -5,7 +5,6 @@ public class Bruger {
     ClientCoordinator clientCoordinator;
 
     public Bruger(String brugernavn, ClientCoordinator clientCoordinator){
-
         this.brugernavn = brugernavn;
         this.clientCoordinator = clientCoordinator;
     }
@@ -13,18 +12,13 @@ public class Bruger {
     public String getBrugernavn() {
         return brugernavn;
     }
-
     public void setBrugernavn(String brugernavn) {
         this.brugernavn = brugernavn;
     }
-
     public ClientCoordinator getClientCoordinator() {
         return clientCoordinator;
     }
-
-    public void setClientCoordinator(ClientCoordinator clientCoordinator) {
-        this.clientCoordinator = clientCoordinator;
-    }
+    public void setClientCoordinator(ClientCoordinator clientCoordinator) { this.clientCoordinator = clientCoordinator;}
 
     @Override
     public String toString() {

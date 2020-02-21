@@ -1,5 +1,7 @@
 package Server;
 
+import Client.ClientMain;
+
 import java.io.IOException;
 
 public class ServerModtagerThread implements Runnable {
@@ -17,32 +19,26 @@ public class ServerModtagerThread implements Runnable {
     public ServerForbindelse getSforb() {
         return sforb;
     }
-
     public void setSforb(ServerForbindelse sforb) {
         this.sforb = sforb;
     }
-
     public ClientCoordinator getClientCoordinator() {
         return clientCoordinator;
     }
-
-    public void setClientCoordinator(ClientCoordinator clientCoordinator) {
-        this.clientCoordinator = clientCoordinator;
-    }
+    public void setClientCoordinator(ClientCoordinator clientCoordinator) { this.clientCoordinator = clientCoordinator; }
 
     @Override
     public void run() {
-        while(true){
+
             try{
-                while(true) {
+                while(ClientMain.clientRunning) {
                     String beskedFraKlient = sforb.getDataInputStream().readUTF();
                     logBog.addModtagenTransaktion(beskedFraKlient);
                     clientCoordinator.behandlBesked(beskedFraKlient);
                 }
-            }catch (IOException io){
+
+            } catch (IOException io) {
                 System.out.println(io);
-                return;
             }
-        }
     }
 }

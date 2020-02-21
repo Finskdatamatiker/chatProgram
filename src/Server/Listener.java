@@ -6,22 +6,25 @@ import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class Listener implements Runnable {
 
     //public static boolean serverRunning = true;
 
     private static final int PORT = 2000;
-    //jeg skal 5 klienter, som hver skal have tre tråde: (en lytter, en sender, en lytter til heartbeat), så 15 i alt
-    public static final int MAXTHREADS = 15;
+    //5 klienter + en, som lytter
+    public static final int MAXTHREADS = 6;
     //vector er thread-sikker
     public static Vector<Bruger> brugere = new Vector<>();
     private ServerSocket serverSocket;
-    private ExecutorService minThreadPool;
+    private ThreadPoolExecutor minThreadPool;
 
 
     public Listener() {
-        minThreadPool = Executors.newFixedThreadPool(MAXTHREADS);
+        minThreadPool = (ThreadPoolExecutor)Executors.newCachedThreadPool();
+        minThreadPool.setMaximumPoolSize(MAXTHREADS);
 
         try {
             serverSocket = new ServerSocket(PORT);
@@ -32,18 +35,29 @@ public class Listener implements Runnable {
     }
 
 
+    public ServerSocket getServerSocket() { return serverSocket; }
+    public void setServerSocket(ServerSocket serverSocket) { this.serverSocket = serverSocket; }
+    public ExecutorService getMinThreadPool() { return minThreadPool; }
+    public void setMinThreadPool(ThreadPoolExecutor minThreadPool) { this.minThreadPool = minThreadPool; }
+
+
     public void modtagKlienter() {
 
         try {
-
-                Socket nyKlient = serverSocket.accept();
-                ServerForbindelse serverForbindelse = new ServerForbindelse(nyKlient);
+               Thread.sleep(1000);
+                Socket nyKlientSocket = serverSocket.accept();
+                //ServerForbindelse serverForbindelse = ServerForbindelse.givServerForbindelse(nyKlientSocket);
+                ServerForbindelse serverForbindelse = new ServerForbindelse(nyKlientSocket);
                 ServerProtokol serverProtokol = new ServerProtokol();
-                ClientCoordinator clientCoordinator = new ClientCoordinator(serverForbindelse, nyKlient, serverProtokol);
+                ClientCoordinator clientCoordinator = new ClientCoordinator(serverForbindelse, nyKlientSocket, serverProtokol);
                 Thread clientCoordinatorThread = new Thread(clientCoordinator);
                 minThreadPool.submit(clientCoordinatorThread);
+                minThreadPool.setKeepAliveTime(30, TimeUnit.SECONDS);
 
-        } catch (IOException io) {
+        } catch (InterruptedException ie){
+            System.out.println(ie);
+        }
+        catch (IOException io) {
             System.out.println(io);
         }
 
@@ -54,37 +68,8 @@ public class Listener implements Runnable {
     public void run() {
         while (true) {
             modtagKlienter();
+
         }
-    }
-
-    public static int getPORT() {
-        return PORT;
-    }
-
-    public static int getMAXTHREADS() {
-        return MAXTHREADS;
-    }
-
-    public List<Bruger> getBrugere() {
-        return brugere;
-    }
-
-
-
-    public ServerSocket getServerSocket() {
-        return serverSocket;
-    }
-
-    public void setServerSocket(ServerSocket serverSocket) {
-        this.serverSocket = serverSocket;
-    }
-
-    public ExecutorService getMinThreadPool() {
-        return minThreadPool;
-    }
-
-    public void setMinThreadPool(ExecutorService minThreadPool) {
-        this.minThreadPool = minThreadPool;
     }
 
 }
