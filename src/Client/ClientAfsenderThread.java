@@ -5,11 +5,19 @@ import java.net.Socket;
 
 public class ClientAfsenderThread implements Runnable {
     /**
-     * hovedtråden hos klient, som sender beskeder til klienten og som laver to andre tråde
+     * Denne klasse er tråden, som sender beskeder til klienten og som laver to andre tråde
+     * (den ene læser beskeder og den anden sender heartbeat).
      */
 
+
+    /**
+     *  static boolean til alle whiles, hvor trådene kører, sådan at man har mulighed for
+     *  at standse dem, hvis det er.
+     */
+    public static boolean clientRunning = true;
     private String username;
-    //String, fordi scanneren læser hele input som String, så det er nemmest også at læse serverPort som en String
+    /*ServerPort som String, fordi scanneren læser hele input som String,
+     så det er nemmest også at læse serverPort som en String*/
     private final String serverPort = "2000";
     //localHost
     private final String serverIp = "127.0.0.1";
@@ -19,8 +27,7 @@ public class ClientAfsenderThread implements Runnable {
     private SendHeartBeat sendHeartBeat;
 
 
-    public ClientAfsenderThread(){
-    }
+    public ClientAfsenderThread(){}
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
@@ -32,13 +39,17 @@ public class ClientAfsenderThread implements Runnable {
     public void setClientProtokol(ClientProtokol clientProtokol) { this.clientProtokol = clientProtokol; }
     public Forbindelse getForb() { return forb; }
     public void setForb(Forbindelse forb) { this.forb = forb; }
-    public SendHeartBeat getSendHeartBeat() {
-        return sendHeartBeat;
-    }
-    public void setSendHeartBeat(SendHeartBeat sendHeartBeat) {
-        this.sendHeartBeat = sendHeartBeat;
-    }
+    public SendHeartBeat getSendHeartBeat() { return sendHeartBeat; }
+    public void setSendHeartBeat(SendHeartBeat sendHeartBeat) { this.sendHeartBeat = sendHeartBeat; }
 
+    /**
+     * Her i run denne tråd beder Clientprotokol om at læse beskeder fra console (som faktisk beder
+     * ConsoleReader om at gøre det). Beskederne bliver så behandlet her. De bliver kontrolleret af
+     * ClientProtokol for gyldighed. Er der fejl, bliver brugeren bedt om at indtaste igen.
+     * Er der ikke fejl, beder tråden Forbindelse om at sende beskeden til serveren.
+     * JOIN-beskeden skal kun køre indtil at brugeren er godkendt og derefter kører
+     * DATA-beskeder i while, indtil brugeren stopper (eller der er ingen heartbeat).
+     */
     public void run() {
 
          ConsoleReader consoleReader = new ConsoleReader();
@@ -86,8 +97,7 @@ public class ClientAfsenderThread implements Runnable {
                  System.out.println(ue);
              }
 
-         //hvad skal betingelsen være her?
-         while (true) {
+         while (clientRunning) {
 
                  System.out.println("Indtast en ny besked, " + username);
                  String[] beskedIArray = clientProtokol.laesDataOgSplit();
@@ -121,9 +131,6 @@ public class ClientAfsenderThread implements Runnable {
                  } catch (IOException io) {
                      System.out.println(io);
                  }
-
          }
-
      }
-
 }

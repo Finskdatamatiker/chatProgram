@@ -1,6 +1,10 @@
 package Server;
 
 public class Bruger {
+    /**
+     * Klassen repræsenterer brugere i systemet
+     */
+
     private String brugernavn;
     ClientCoordinator clientCoordinator;
 

@@ -2,11 +2,25 @@ package Client;
 
 public class ClientProtokol {
 
+    /**
+     * ClientProkokollen er den samme som i serveren, men jeg vil holde packages adskilte.
+     * Den kender reglerne for, hvorfor input er lovligt/ulovligt.
+     * Dog er der den forskel, at her lader jeg ConsoleReader læse beskeder fra brugeren.
+     */
+
     ConsoleReader consoleReader;
 
     public ClientProtokol(ConsoleReader consoleReader) {
         this.consoleReader = consoleReader;
     }
+
+    /**
+     * Metoden læser JOIN fra kunden og enten returnerer username, serverPort og serverIP i array af String
+     * eller FEJL-beskeden. Egentlig kunne jeg her nøjes med at returnere username, fordi serverIP og
+     * serverPort er rigtige (ellers ville beskeden ikke komme til serveren). Men jeg gemmer dem alligevel,
+     * hvis jeg nu senere skulle bruge de oplysninger alligevel.
+     * @return
+     */
 
     public String[] laesJoinOgSplit() {
         String joinBesked = consoleReader.laesInputFraConsole();
@@ -51,6 +65,12 @@ public class ClientProtokol {
         }
     }
 
+    /**
+     * Metoden læser DATA-besked fra klienten og returnerer username og besked i array af String.
+     * Jeg bruger split() til at adskille elementerne. Hvis beskeden ikke overholder protokollen,
+     * returnerere jeg FEJL. Jeg skal gemme begge elemengter også i FEJL, fordi ellers får jeg nullpointer.
+     * @return
+     */
     public String[] laesDataOgSplit() {
         String besked = consoleReader.laesInputFraConsole();
         String[] gemtIArray = new String[2];
@@ -77,11 +97,14 @@ public class ClientProtokol {
     }
 
 
-    /*
-      + er for at tjekke multiple tegn
+    /**
+     * Metoden tjekker, at brugernavn lever op til protokollen.
+     * I regex begrænser jeg tegnene. Plus betyder, at man tjekker flere tegn.
+     * @param brugernavn
+     * @return true eller false
      */
     public boolean erGyldigBrugernavn(String brugernavn){
-        if(brugernavn.length() <= 12 && !brugernavn.matches("[^a-zA-Z0-9_\\-]+")){
+        if(brugernavn.length() <= 12 && brugernavn.matches("[a-zA-Z0-9_\\-]+")){
             return true;
         }
         return false;
@@ -93,6 +116,4 @@ public class ClientProtokol {
         }
         return false;
     }
-
-
 }

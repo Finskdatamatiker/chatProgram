@@ -11,13 +11,26 @@ import java.util.concurrent.TimeUnit;
 
 public class Listener implements Runnable {
 
-    //public static boolean serverRunning = true;
+    /**
+     * Denne klasse er den tråd, som lytter og tager imod klienter.
+     */
+
+
+    /**
+     *  static boolean til alle whiles, hvor trådene kører, sådan at man har mulighed for
+     *  at standse dem, hvis det er.
+     */
+    public static boolean serverRunning = true;
 
     private static final int PORT = 2000;
     //5 klienter + en, som lytter
     public static final int MAXTHREADS = 6;
-    //vector er thread-sikker
-    public static Vector<Bruger> brugere = new Vector<>();
+    /**
+     * vector er thread-sikker. Jeg vil have en static og final, sådan at det er den samme liste
+     * hele tiden uden at jeg skal genere en ny i ClientCoordinator
+     * (hvilket jeg skuklle, hvis jeg gav den som et felt).
+     */
+    public static final Vector<Bruger> brugere = new Vector<>();
     private ServerSocket serverSocket;
     private ThreadPoolExecutor minThreadPool;
 
@@ -40,13 +53,19 @@ public class Listener implements Runnable {
     public ExecutorService getMinThreadPool() { return minThreadPool; }
     public void setMinThreadPool(ThreadPoolExecutor minThreadPool) { this.minThreadPool = minThreadPool; }
 
+    /**
+     * Sleep() mellem klienterne hjælper til at håndtere en større mængde tråde,
+     * da testen med mange samtidige klienter, som åbnede og lukkede forbindelsen, fik jeg problemer med kø.
+     * Jeg laver en ny socket til hver klient og giver klienten også en forbindelse (datatinput og datatoutputstream),
+     * og serverProtokollen, som den skal kende.
+     * Tråden med klienten bliver håndteret af threadpool.
+     */
 
     public void modtagKlienter() {
 
         try {
                Thread.sleep(1000);
                 Socket nyKlientSocket = serverSocket.accept();
-                //ServerForbindelse serverForbindelse = ServerForbindelse.givServerForbindelse(nyKlientSocket);
                 ServerForbindelse serverForbindelse = new ServerForbindelse(nyKlientSocket);
                 ServerProtokol serverProtokol = new ServerProtokol();
                 ClientCoordinator clientCoordinator = new ClientCoordinator(serverForbindelse, nyKlientSocket, serverProtokol);
@@ -54,11 +73,8 @@ public class Listener implements Runnable {
                 minThreadPool.submit(clientCoordinatorThread);
                 minThreadPool.setKeepAliveTime(30, TimeUnit.SECONDS);
 
-        } catch (InterruptedException ie){
+        } catch (InterruptedException | IOException ie){
             System.out.println(ie);
-        }
-        catch (IOException io) {
-            System.out.println(io);
         }
 
     }
@@ -66,10 +82,8 @@ public class Listener implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
+        while (serverRunning) {
             modtagKlienter();
-
         }
     }
-
 }

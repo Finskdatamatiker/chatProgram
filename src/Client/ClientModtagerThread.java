@@ -3,9 +3,12 @@ package Client;
 import java.io.IOException;
 
 public class ClientModtagerThread implements Runnable {
+    /**
+     * Deenne tråd tager imod beskeder fra serveren.
+     */
 
     private Forbindelse forb;
-    //dette med henblik på at sende den rigtige fejlbesked til console til klienten
+    //denne boolean med henblik på at sende den rigtige fejlbesked til console til klienten
     public boolean erJoined = false;
 
     public ClientModtagerThread(Forbindelse forb){
@@ -15,8 +18,7 @@ public class ClientModtagerThread implements Runnable {
     @Override
     public void run() {
 
-        //betingelsen her? Main.isRunning?
-        while(true) {
+        while(ClientAfsenderThread.clientRunning) {
             try {
                 String beskedFraServer = forb.getDataInputStream().readUTF();
                 switch (beskedFraServer){
@@ -40,7 +42,7 @@ public class ClientModtagerThread implements Runnable {
                         break;}
             } catch (IOException io) {
                 forb.lukForbindelse();
-                System.out.println("Exception i input fra serveren til klient " + io);
+                System.out.println(io);
                 return;
             }
         }

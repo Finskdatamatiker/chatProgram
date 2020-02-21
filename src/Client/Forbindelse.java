@@ -7,8 +7,8 @@ import java.net.Socket;
 
 public class Forbindelse {
     /**
-     * Klassen laver datainput og dataoutputstream til klienten
-     * Klassen er singleton, fordi der kun skal være én forbindelse per klient
+     * Klassen laver datainputstream og dataoutputstream til socket
+     * Klassen er singleton, fordi der kun skal være én forbindelse for klienten
      */
 
     private Socket socket;
@@ -24,7 +24,6 @@ public class Forbindelse {
             dataOutputStream = new DataOutputStream(socket.getOutputStream());
         }catch (IOException io){
             if(socket.isClosed()) {
-
                 lukForbindelse();
             }
             System.out.println(io);

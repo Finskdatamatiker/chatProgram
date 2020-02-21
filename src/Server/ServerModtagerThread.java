@@ -1,10 +1,12 @@
 package Server;
 
-import Client.ClientMain;
-
 import java.io.IOException;
 
 public class ServerModtagerThread implements Runnable {
+    /**
+     * Klassen repræsenterer den tråd, som læser beskeder fra klienten og sender
+     * dem videre til ClientCoordinator til at blive behandlet.
+     */
 
     private ServerForbindelse sforb;
     private ClientCoordinator clientCoordinator;
@@ -16,22 +18,16 @@ public class ServerModtagerThread implements Runnable {
         logBog = new LogBog();
     }
 
-    public ServerForbindelse getSforb() {
-        return sforb;
-    }
-    public void setSforb(ServerForbindelse sforb) {
-        this.sforb = sforb;
-    }
-    public ClientCoordinator getClientCoordinator() {
-        return clientCoordinator;
-    }
+    public ServerForbindelse getSforb() { return sforb; }
+    public void setSforb(ServerForbindelse sforb) { this.sforb = sforb; }
+    public ClientCoordinator getClientCoordinator() { return clientCoordinator; }
     public void setClientCoordinator(ClientCoordinator clientCoordinator) { this.clientCoordinator = clientCoordinator; }
 
     @Override
     public void run() {
 
             try{
-                while(ClientMain.clientRunning) {
+                while(Listener.serverRunning) {
                     String beskedFraKlient = sforb.getDataInputStream().readUTF();
                     logBog.addModtagenTransaktion(beskedFraKlient);
                     clientCoordinator.behandlBesked(beskedFraKlient);

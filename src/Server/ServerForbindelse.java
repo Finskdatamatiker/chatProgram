@@ -8,9 +8,10 @@ import java.net.Socket;
 public class ServerForbindelse {
 
     /**
-     * Jeg skal bruge mange forbindelser, dvs. en til hver klient, så kan ikke laves til singleton som hos klienten
+     * Jeg skal bruge mange forbindelser, dvs. en til hver klient, så den kan IKKE laves til singleton som hos klienten.
+     *  Forbindelsen laver datatinputstream og dataoutputstream vil socket og står for at lukke forbindelsen,
+     *  når den bliver bedt om at gøre det.
      */
-
     private Socket socket;
     private DataInputStream dataInputStream;
     private DataOutputStream dataOutputStream;
@@ -35,9 +36,8 @@ public class ServerForbindelse {
     public void setDataOutputStream(DataOutputStream dataOutputStream) { this.dataOutputStream = dataOutputStream; }
 
 
-    public void lukForbindelse(){
+    public void lukForbindelse (){
         try {
-                dataOutputStream.writeUTF("Lukker forbindelsen");
                 dataOutputStream.flush();
                 dataInputStream.close();
                 dataOutputStream.close();

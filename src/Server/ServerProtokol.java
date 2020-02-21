@@ -3,11 +3,21 @@ package Server;
 public class ServerProtokol {
 
     /**
-     * ServerProkokollen er en den samme som hos klienten, men jeg vil holde packages adskilte.
+     * ServerProkokollen er den samme som hos klienten, men jeg vil holde packages adskilte.
+     * (Dog har klienten en console-reader i protokolklassen til at læse beskeder fra console.)
+     * Den kender reglerne for, hvorfor input er lovligt/ulovligt.
      */
 
     public ServerProtokol(){}
 
+    /**
+     * Metoden læser JOIN fra kunden og enten returnerer username, serverPort og serverIP i array af String
+     * eller FEJL-beskeden. Egentlig kunne jeg her nøjes med at returnere username, fordi serverIP og
+     * serverPort er rigtige (ellers ville beskeden ikke komme til serveren). Men jeg gemmer dem alligevel,
+     * hvis jeg nu senere skulle bruge de oplysninger alligevel.
+     * @param besked
+     * @return
+     */
     public String[] laesJoinOgSplit(String besked) {
         String username = "";
         String serverIp = "";
@@ -51,14 +61,27 @@ public class ServerProtokol {
 
     }
 
+    /**
+     * Metoden tjekker, at brugernavn lever op til protokollen.
+     * I regex begrænser jeg tegnene. Plus betyder, at man tjekker flere tegn.
+     * @param brugernavn
+     * @return true eller false
+     */
     public boolean erGyldigBrugernavn(String brugernavn){
-        if(brugernavn.length() <= 12 && !brugernavn.matches("[^a-zA-Z0-9_\\-]+")){
+        if(brugernavn.length() <= 12 && brugernavn.matches("[a-zA-Z0-9_\\-]+")){
             return true;
         }
         return false;
     }
 
 
+    /**
+     * Metoden læser DATA-besked fra klienten og returnerer username og besked i array af String.
+     * Jeg bruger split() til at adskille elementerne. Hvis beskeden ikke overholder protokollen,
+     * returnerere jeg FEJL. Jeg skal gemme begge elemengter også i FEJL, fordi ellers får jeg nullpointer.
+     * @param besked
+     * @return
+     */
     public String[] laesDataOgSplit(String besked) {
 
         String[] gemtIArray = new String[2];

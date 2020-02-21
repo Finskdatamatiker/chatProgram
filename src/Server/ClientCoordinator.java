@@ -1,14 +1,21 @@
 package Server;
 
-
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Iterator;
 
-
 public class ClientCoordinator implements Runnable {
     /**
-     * Tråden, som sender beskeder til kunden
+     * Klassen er tråden, som behandler modtagne beskeder og giver et svar til kunden.
+     * Den repræsenterer én klient ad gangen og får socket til klienten fra Listener.
+     * Klassen laver en anden tråd, som læser beskederne fra klienten (ServerModtagerThread).
+     * Klassen tilføjer brugeren til brugerlisten, sletter inaktive brugere og giver svaret til
+     * kunden i overenstemmelse med reglerne i klassen ServerProtokol.
+     * Klassen tilføjer også alle transaktioner til LogBog.
+     *
+     * TO_DO: Jeg har endnu ikke kunnet håndtere det at slette en bruger, som
+     * IKKE giver QUIT besked, men bare lukker forbindelsen uden advarsel.
+     * Forbindelsen lukkes, men brugeren figurerer fortsat på listen.
      */
     private ServerForbindelse sforb;
     private Socket socket;
@@ -47,6 +54,13 @@ public class ClientCoordinator implements Runnable {
           Thread serverModtagerThread = new Thread(new ServerModtagerThread(sforb, this));
           serverModtagerThread.start();
         }
+
+    /**
+     * Her bliver der behandlet de forskellige beskeder, som serverModtager-tråden læser
+     *  NO_IMAV er tilføjet til protokollen for manglende heeartbeat, fordi datatoutputstream forudsætter,
+     *  at man først lukker fra serversiden. Så når klienten lukker, giver serveren ok og klientens program lukkes.
+     * @param beskedFraKlient som serverModtagerThread læser
+     */
 
     public void behandlBesked(String beskedFraKlient) {
 
@@ -118,24 +132,37 @@ public class ClientCoordinator implements Runnable {
             }
         }
 
-        //tilfoej bruger og send listen til alle
-       public void tilfoejBruger(String navn){
-            if (Listener.brugere.size() < Listener.MAXTHREADS) {
-                bruger = new Bruger(navn, this);
-                Listener.brugere.add(bruger);
-                for (Bruger b : Listener.brugere) {
-                    b.getClientCoordinator().sendBeskedTilKlient("LIST " + Listener.brugere.toString());
-                }
-            } else {
-                sendBeskedTilKlient("J_ER err_code: err_msg");
-            }
-    }
+    /**
+     *  Tilfoejer en bruger og sender en LIST over nye brugere til alle.
+     *  Jeg looper med iterator-objektet
+     */
 
-    public void fjernBruger(){
-        Iterator<Bruger> iterator = Listener.brugere.iterator();
-        while(iterator.hasNext()){
-            Bruger bruger = iterator.next();
-            if(bruger.getBrugernavn().equals(getBruger().getBrugernavn())){
+       public void tilfoejBruger(String navn){
+
+           bruger = new Bruger(navn, this);
+           Listener.brugere.add(bruger);
+
+           Iterator<Bruger> iterator = Listener.brugere.iterator();
+           Bruger brugeren;
+           while(iterator.hasNext()){
+               brugeren = iterator.next();
+               brugeren.getClientCoordinator().sendBeskedTilKlient("LIST " + Listener.brugere.toString());
+               }
+           }
+
+    /**
+     * Sletter en inaktiv eller stoppet klient fra listen.
+     * Sender en bekræftelse til klienten om at det er OK at slukke.
+     * QUITOK er dermed tilføjet til protokollen.
+     * Jeg looper med iterator-objektet.
+      */
+
+        public void fjernBruger(){
+           Iterator<Bruger> iterator = Listener.brugere.iterator();
+           Bruger brugeren = null;
+           while(iterator.hasNext()){
+              brugeren = iterator.next();
+              if(brugeren.getBrugernavn().equals(bruger.getBrugernavn())){
                 iterator.remove();
             }
         }
