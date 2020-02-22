@@ -87,11 +87,9 @@ public class ClientCoordinator implements Runnable {
                     for(int i = 0; i < Listener.brugere.size(); i++){
                         String navn = Listener.brugere.get(i).getBrugernavn();
                         if (navn.equals(username) || !protokol.erGyldigBrugernavn(username)) {
-
                             sendBeskedTilKlient("J_ER1: ugyldigt username");
                         }
                     }
-
                         tilfoejBruger(username);
                        sendBeskedTilKlient("J_OK");
 
@@ -147,7 +145,6 @@ public class ClientCoordinator implements Runnable {
        public void tilfoejBruger(String navn) {
 
                bruger = new Bruger(navn, this);
-           System.out.println("hvad er brugeren nu inde i tilføjBruger? " + bruger.getBrugernavn());
                Listener.brugere.add(bruger);
                 for(int i = 0; i < Listener.brugere.size(); i++) {
                     Listener.brugere.get(i).getClientCoordinator().sendBeskedTilKlient("LIST " + Listener.brugere.toString());

@@ -33,9 +33,7 @@ public class ServerModtagerThread implements Runnable {
                     String beskedFraKlient = sforb.getDataInputStream().readUTF();
                     System.out.println(beskedFraKlient);
                     logBog.addModtagenTransaktion(beskedFraKlient);
-
-                     clientCoordinator.behandlBesked(beskedFraKlient);
-
+                    clientCoordinator.behandlBesked(beskedFraKlient);
                 }
 
             } catch (IOException io) {
