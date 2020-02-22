@@ -27,10 +27,11 @@ public class Listener implements Runnable {
     public static final int MAXTHREADS = 6;
     /**
      * vector er thread-sikker. Jeg vil have en static og final, sådan at det er den samme liste
-     * hele tiden uden at jeg skal genere en ny i ClientCoordinator
-     * (hvilket jeg skuklle, hvis jeg gav den som et felt).
+     * hele tiden uden at jeg skal genere en ny i ClientCoordinator.
+     * Men Vector kan give ConcurrentModificationException, så den er ikke fejlfri med
+     * multithreading. Det kan man forebygge ved ikke at bruge iterator, men looper i for-loop.
      */
-    //public static final List<Bruger> brugere = Collections.synchronizedList(new Vector<>());
+
     public static final Vector<Bruger> brugere = new Vector<>();
     private ServerSocket serverSocket;
     private ThreadPoolExecutor minThreadPool;
