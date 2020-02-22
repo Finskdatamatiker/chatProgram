@@ -11,6 +11,7 @@ public class ServerModtagerThread implements Runnable {
     private ServerForbindelse sforb;
     private ClientCoordinator clientCoordinator;
     private LogBog logBog;
+    //private final Object lockPaaListen = new Object();
 
     public ServerModtagerThread(ServerForbindelse sforb, ClientCoordinator clientCoordinator){
         this.sforb = sforb;
@@ -28,9 +29,13 @@ public class ServerModtagerThread implements Runnable {
 
             try{
                 while(Listener.serverRunning) {
+
                     String beskedFraKlient = sforb.getDataInputStream().readUTF();
+                    System.out.println(beskedFraKlient);
                     logBog.addModtagenTransaktion(beskedFraKlient);
-                    clientCoordinator.behandlBesked(beskedFraKlient);
+
+                     clientCoordinator.behandlBesked(beskedFraKlient);
+
                 }
 
             } catch (IOException io) {

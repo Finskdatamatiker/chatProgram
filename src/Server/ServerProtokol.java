@@ -68,7 +68,7 @@ public class ServerProtokol {
      * @return true eller false
      */
     public boolean erGyldigBrugernavn(String brugernavn){
-        if(brugernavn.length() <= 12 && brugernavn.matches("[a-zA-Z0-9_\\-]+")){
+        if(brugernavn.length() <= 12 && !brugernavn.matches("[^a-zA-Z0-9_\\-]+")){
             return true;
         }
         return false;

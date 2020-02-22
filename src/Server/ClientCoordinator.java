@@ -59,86 +59,73 @@ public class ClientCoordinator implements Runnable {
      * Her bliver der behandlet de forskellige beskeder, som serverModtager-tråden læser
      *  NO_IMAV er tilføjet til protokollen for manglende heeartbeat, fordi datatoutputstream forudsætter,
      *  at man først lukker fra serversiden. Så når klienten lukker, giver serveren ok og klientens program lukkes.
+     *  N_N står for nyt navn og bruges, når brugeren har indtastet et brugernavn, som allerede eksisterer.
      * @param beskedFraKlient som serverModtagerThread læser
      */
 
     public void behandlBesked(String beskedFraKlient) {
 
-            String svar = "";
+        //iterator, dvs. foreach giver ConcurrentModificationException
 
-            if(beskedFraKlient.substring(0,3).equals("N_N")) {
+            if (beskedFraKlient.substring(0, 3).equals("N_N")) {
                 String nytNavn = beskedFraKlient.substring(3);
-                boolean eksistererBruger = false;
-                for (Bruger b : Listener.brugere) {
-                    String navn = b.getBrugernavn();
-                    if (navn.equals(nytNavn)) {
-                        eksistererBruger = true;
-                    }
+                for(int i = 0; i < Listener.brugere.size(); i++){
 
-                    if (eksistererBruger || !protokol.erGyldigBrugernavn(nytNavn)) {
-                        //svar = "J_ER err_code: err_msg";
-                        svar = "J_ER1: ugyldigt username";
+                    String navn = Listener.brugere.get(i).getBrugernavn();
+                    if (navn.equals(nytNavn) || !protokol.erGyldigBrugernavn(nytNavn)) {
+                        sendBeskedTilKlient("J_ER1: ugyldigt username");
                     } else {
-                        System.out.println("kommer jeg her overhovedet " + nytNavn);
-                        b.setBrugernavn(nytNavn);
-                        svar = "J_OK";
+                         bruger.setBrugernavn(nytNavn);
+                        sendBeskedTilKlient("J_OK");
                     }
-                }
-            }
+                 }
 
-            if (beskedFraKlient.contains("JOIN")) {
+            } else if (beskedFraKlient.contains("JOIN")) {
                 String[] erDenJoin = protokol.laesJoinOgSplit(beskedFraKlient);
                 String username = erDenJoin[0];
 
-                //Hvis listen er tom til at starte med
-                if (Listener.brugere.size() == 0) {
-                    tilfoejBruger(username);
-                    svar = "J_OK";
-                }
-                else {
-                    boolean erBrugerPaaListen = false;
-                    for (Bruger b : Listener.brugere) {
-                        String navn = b.getBrugernavn();
-                        if (navn.equals(username)) erBrugerPaaListen = true;}
+                    for(int i = 0; i < Listener.brugere.size(); i++){
+                        String navn = Listener.brugere.get(i).getBrugernavn();
+                        if (navn.equals(username) || !protokol.erGyldigBrugernavn(username)) {
 
-                        if (erBrugerPaaListen || !protokol.erGyldigBrugernavn(username)) {
-                            //svar = "J_ER err_code: err_msg";
-                            svar = "J_ER1: ugyldigt username";
-                        } else {
-                            tilfoejBruger(username);
-                            svar = "J_OK";
+                            sendBeskedTilKlient("J_ER1: ugyldigt username");
                         }
-                }
+                    }
+
+                        tilfoejBruger(username);
+                       sendBeskedTilKlient("J_OK");
+
             } else if (beskedFraKlient.contains("DATA")) {
+                String[] erDenData = protokol.laesDataOgSplit(beskedFraKlient);
+                String brugernavn = erDenData[0];
+                String beskedTilAlle = erDenData[1];
 
-                    String[] erDenData = protokol.laesDataOgSplit(beskedFraKlient);
-                    String brugernavn = erDenData[0];
-                    String beskedTilAlle = erDenData[1];
+                if (beskedTilAlle.equals("FEJL")) {
+                    sendBeskedTilKlient("J_ER2: fejl i DATA-protokol");
 
-                    if(beskedTilAlle.equals("FEJL")){
-                        svar = "Husk protokollen: DATA brugernavn: besked";
-                    }
-                    //besked, som sendes til alle bortset fra afsenderen
-                    for (Bruger b : Listener.brugere) {
-                        String beskeden = brugernavn + " sender besked: " + beskedTilAlle;
+                } else {
+
+                        String beskeden = brugernavn + " sender besked:" + beskedTilAlle;
                         logBog.addAfsendtTransaktion(beskeden);
-                        if (!b.getBrugernavn().equals(brugernavn))
-                        b.getClientCoordinator().sendBeskedTilKlient(beskeden);
+                        for(int i = 0; i < Listener.brugere.size(); i++){
+                            if(!Listener.brugere.get(i).getBrugernavn().equals(brugernavn)){
+                            Listener.brugere.get(i).getClientCoordinator().sendBeskedTilKlient(beskeden);
+                            }
+                            else{
+                                Listener.brugere.get(i).getClientCoordinator().sendBeskedTilKlient("TAK");
+                            }
                     }
+                }
 
             } else if (beskedFraKlient.equals("QUIT") || beskedFraKlient.equals("NO_IMAV")) {
-                svar = "";
                 fjernBruger();
 
             } else if (beskedFraKlient.equals("IMAV")) {
-                svar = "Tak for at du fortsat er aktiv.";
+                sendBeskedTilKlient("Tak for at du fortsat er aktiv.");
 
             } else {
-                svar = "J_ER err_code: err_msg";
+                sendBeskedTilKlient("J_ER3: ukendt fejl");
             }
-            //svar til kunden
-            logBog.addAfsendtTransaktion(svar);
-            sendBeskedTilKlient(svar);
         }
 
 
@@ -155,42 +142,35 @@ public class ClientCoordinator implements Runnable {
 
     /**
      *  Tilfoejer en bruger og sender en LIST over nye brugere til alle.
-     *  Jeg looper med iterator-objektet
      */
 
-       public void tilfoejBruger(String navn){
+       public void tilfoejBruger(String navn) {
 
-           bruger = new Bruger(navn, this);
-           Listener.brugere.add(bruger);
-
-           Iterator<Bruger> iterator = Listener.brugere.iterator();
-           Bruger brugeren;
-           while(iterator.hasNext()){
-               brugeren = iterator.next();
-               brugeren.getClientCoordinator().sendBeskedTilKlient("LIST " + Listener.brugere.toString());
-               }
-           }
+               bruger = new Bruger(navn, this);
+           System.out.println("hvad er brugeren nu inde i tilføjBruger? " + bruger.getBrugernavn());
+               Listener.brugere.add(bruger);
+                for(int i = 0; i < Listener.brugere.size(); i++) {
+                    Listener.brugere.get(i).getClientCoordinator().sendBeskedTilKlient("LIST " + Listener.brugere.toString());
+                }
+       }
 
     /**
      * Sletter en inaktiv eller stoppet klient fra listen.
      * Sender en bekræftelse til klienten om at det er OK at slukke.
      * QUITOK er dermed tilføjet til protokollen.
-     * Jeg looper med iterator-objektet.
       */
 
-        public void fjernBruger(){
-           Iterator<Bruger> iterator = Listener.brugere.iterator();
-           Bruger brugeren = null;
-           while(iterator.hasNext()){
-              brugeren = iterator.next();
-              if(brugeren.getBrugernavn().equals(bruger.getBrugernavn())){
-                iterator.remove();
-            }
-        }
-            sendBeskedTilKlient("QUITOK");
-            sforb.lukForbindelse();
-        }
+        public void fjernBruger() {
 
+            for(int i = 0; i < Listener.brugere.size(); i++) {
+                if(Listener.brugere.get(i).getBrugernavn().equals(bruger.getBrugernavn())){
+                    Listener.brugere.remove(i);
+                }
+            }
+                sendBeskedTilKlient("QUITOK");
+                sforb.lukForbindelse();
+
+        }
 }
 
 

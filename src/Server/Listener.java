@@ -30,6 +30,7 @@ public class Listener implements Runnable {
      * hele tiden uden at jeg skal genere en ny i ClientCoordinator
      * (hvilket jeg skuklle, hvis jeg gav den som et felt).
      */
+    //public static final List<Bruger> brugere = Collections.synchronizedList(new Vector<>());
     public static final Vector<Bruger> brugere = new Vector<>();
     private ServerSocket serverSocket;
     private ThreadPoolExecutor minThreadPool;

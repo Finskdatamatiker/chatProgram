@@ -2,7 +2,7 @@ package Client;
 
 import java.util.Scanner;
 
-public class ConsoleReader {
+public class ConsoleReader{
 
     /**
      * Klassen har scanner til at læse brugerens beskeder fra consol
@@ -13,7 +13,12 @@ public class ConsoleReader {
 
     public ConsoleReader() {}
 
-   public String laesInputFraConsole(){
+    public Scanner getConsole() { return console; }
+    public void setConsole(Scanner console) {
+        this.console = console;
+    }
+
+    public String laesInputFraConsole(){
         String input = console.nextLine();
         return input;
    }
