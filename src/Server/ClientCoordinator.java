@@ -66,6 +66,26 @@ public class ClientCoordinator implements Runnable {
 
             String svar = "";
 
+            if(beskedFraKlient.substring(0,3).equals("N_N")) {
+                String nytNavn = beskedFraKlient.substring(3);
+                boolean eksistererBruger = false;
+                for (Bruger b : Listener.brugere) {
+                    String navn = b.getBrugernavn();
+                    if (navn.equals(nytNavn)) {
+                        eksistererBruger = true;
+                    }
+
+                    if (eksistererBruger || !protokol.erGyldigBrugernavn(nytNavn)) {
+                        //svar = "J_ER err_code: err_msg";
+                        svar = "J_ER1: ugyldigt username";
+                    } else {
+                        System.out.println("kommer jeg her overhovedet " + nytNavn);
+                        b.setBrugernavn(nytNavn);
+                        svar = "J_OK";
+                    }
+                }
+            }
+
             if (beskedFraKlient.contains("JOIN")) {
                 String[] erDenJoin = protokol.laesJoinOgSplit(beskedFraKlient);
                 String username = erDenJoin[0];
@@ -82,7 +102,8 @@ public class ClientCoordinator implements Runnable {
                         if (navn.equals(username)) erBrugerPaaListen = true;}
 
                         if (erBrugerPaaListen || !protokol.erGyldigBrugernavn(username)) {
-                            svar = "J_ER err_code: err_msg";
+                            //svar = "J_ER err_code: err_msg";
+                            svar = "J_ER1: ugyldigt username";
                         } else {
                             tilfoejBruger(username);
                             svar = "J_OK";
