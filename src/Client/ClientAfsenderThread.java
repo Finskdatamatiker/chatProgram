@@ -236,9 +236,12 @@ public class ClientAfsenderThread implements Runnable {
             dataMetode();
          }
         else if(beskedFraServer.equals("J_ER1: ugyldigt username")) {
-            /*Jeg har lidt svært ved at styre listen tidsmæssigt, så klienten når at få printet listen,
-            inden denne ændring er gemt (dvs. klienten ser sit ugyldige navn på listen).
-            Men når den næste klient kommer på, er listen opdateret.*/
+            /**
+             * Klienten når at få printet listen, inden denne ændring er gemt  dvs. klienten
+             * ser sit ugyldige navn på listen, men når den næste klient kommer på, er listen opdateret.
+             * Har ikke kunnet løse den - i koden på serversiden ændrer jeg navnet først på listen
+             * og derefter sender den, men alligevel sker det.
+            */
             System.out.println("Serveren afviser username, så valg et nyt navn: " + beskedFraServer);
             bedOmEtNytNavn();
 
