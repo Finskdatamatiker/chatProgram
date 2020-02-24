@@ -66,6 +66,7 @@ public class ClientCoordinator implements Runnable {
     public void behandlBesked(String beskedFraKlient) {
 
         //iterator, dvs. foreach giver ConcurrentModificationException
+        //så jeg looper i for-loop
 
             if (beskedFraKlient.substring(0, 3).equals("N_N")) {
                 String nytNavn = beskedFraKlient.substring(3);
@@ -102,7 +103,7 @@ public class ClientCoordinator implements Runnable {
                     sendBeskedTilKlient("J_ER2: fejl i DATA-protokol");
 
                 } else {
-
+                        //alle andre får beskeden og afsenderen får TAK
                         String beskeden = brugernavn + " sender besked:" + beskedTilAlle;
                         logBog.addAfsendtTransaktion(beskeden);
                         for(int i = 0; i < Listener.brugere.size(); i++){
@@ -153,6 +154,8 @@ public class ClientCoordinator implements Runnable {
 
     /**
      * Sletter en inaktiv eller stoppet klient fra listen.
+     * Elementerne er unikke på listen, fordi jeg ikke accepteret brugere med
+     * det samme navn, så jeg risikerer ikke at slette flere brugere.
      * Sender en bekræftelse til klienten om at det er OK at slukke.
      * QUITOK er dermed tilføjet til protokollen.
       */
