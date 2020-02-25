@@ -11,7 +11,6 @@ public class ServerModtagerThread implements Runnable {
     private ServerForbindelse sforb;
     private ClientCoordinator clientCoordinator;
     private LogBog logBog;
-    //private final Object lockPaaListen = new Object();
 
     public ServerModtagerThread(ServerForbindelse sforb, ClientCoordinator clientCoordinator){
         this.sforb = sforb;

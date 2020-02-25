@@ -34,13 +34,11 @@ public class SendHeartBeat implements Runnable {
         try{
             /**
              * Jeg sender heartbeat hver gang klienten sender en besked.
-             * Men jer nødt til at have længere mellem den sidste besked og heartbeat,
-             * fordi jeg ikke kan nå at teste med flere klienter, når det går så hurtigt!
              * Men når der ikke er heartbeat, lukkes forbindelsen.
              */
 
             while(ClientAfsenderThread.clientRunning){
-            Thread.sleep(159000);
+            Thread.sleep(59000);
                     try {
                         if(heartbeat){
                         forb.getDataOutputStream().writeUTF("IMAV");

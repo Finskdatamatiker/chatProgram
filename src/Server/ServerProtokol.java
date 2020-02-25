@@ -3,9 +3,11 @@ package Server;
 public class ServerProtokol {
 
     /**
-     * ServerProkokollen er den samme som hos klienten, men jeg vil holde packages adskilte.
-     * (Dog har klienten en console-reader i protokolklassen til at læse beskeder fra console.)
-     * Den kender reglerne for, hvorfor input er lovligt/ulovligt.
+     * ServerProkokollen er den samme som hos klienten, men jeg vil holde packages adskilte og
+     * desuden er der en lille forskel i, hvordan klient-siden er implementeret (protokollen
+     * er den samme, men klienten skal fx tage højde for, at serveren eventuelt beder
+     * klienten om at indtaste et nyt brugernavn. Det har indflydelse på, hvilken melding
+     * protokollen returnerer. Desuden læser klienten beskeder fra klienten fra consolen.
      */
 
     public ServerProtokol(){}

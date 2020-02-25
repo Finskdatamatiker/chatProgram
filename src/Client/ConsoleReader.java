@@ -19,8 +19,7 @@ public class ConsoleReader{
     }
 
     public String laesInputFraConsole(){
-        String input = console.nextLine();
-        return input;
+        return console.nextLine();
    }
 
 }

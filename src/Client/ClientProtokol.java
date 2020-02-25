@@ -5,7 +5,7 @@ public class ClientProtokol {
     /**
      * ClientProkokollen er den samme som i serveren, men jeg vil holde packages adskilte.
      * Den kender reglerne for, hvorfor input er lovligt/ulovligt.
-     * Dog er der den forskel, at her lader jeg ConsoleReader læse beskeder fra brugeren.
+     * Dog er der den forskel, at her læser ConsoleReader beskeder fra brugeren.
      */
 
     ConsoleReader consoleReader;
@@ -19,6 +19,8 @@ public class ClientProtokol {
      * eller FEJL-beskeden. Egentlig kunne jeg her nøjes med at returnere username, fordi serverIP og
      * serverPort er rigtige (ellers ville beskeden ikke komme til serveren). Men jeg gemmer dem alligevel,
      * hvis jeg nu senere skulle bruge de oplysninger alligevel.
+     * Fejlbeskeder skal have det samme antal elementer i String[] for at jeg ikke får
+     * nullPointerException
      * @return
      */
 
@@ -29,13 +31,20 @@ public class ClientProtokol {
         String serverPort = "";
         String[] gemtIArray = new String[3];
 
-        if (joinBesked.length() < 5 || !joinBesked.substring(0,5).equals("JOIN ")) {
+        if (joinBesked.contains("QUIT")) {
+            gemtIArray[0] = "QUIT";
+            gemtIArray[1] = "Q";
+            gemtIArray[2] = "Q";
+            return gemtIArray;
+        }
+
+        else if (joinBesked.length() < 5 || !joinBesked.substring(0,5).equals("JOIN ")) {
                 gemtIArray[0] = "FEJL";
                 gemtIArray[1] = "FEJL";
                 gemtIArray[2] = "FEJL";
                 return gemtIArray;
         }
-        else{
+        else if (joinBesked.contains("JOIN")) {
             if (joinBesked.indexOf("JOIN ") == 0) {
                 joinBesked = joinBesked.replace("JOIN ", "");
             }
@@ -63,35 +72,45 @@ public class ClientProtokol {
 
             return infoFraJoin;
         }
+
+        else{
+            gemtIArray[0] = joinBesked;
+            gemtIArray[1] = joinBesked;
+            gemtIArray[2] = joinBesked;
+            return gemtIArray;
+
+        }
     }
 
     /**
      * Metoden læser DATA-besked fra klienten og returnerer username og besked i array af String.
      * Jeg bruger split() til at adskille elementerne. Hvis beskeden ikke overholder protokollen,
-     * returnerere jeg FEJL. Jeg skal gemme begge elemengter også i FEJL, fordi ellers får jeg nullpointer.
+     * returnerere jeg FEJL, eller hvis brugeren vil stoppe, returnerer jge QUIT.
+     * Fejlbeskeder skal have det samme antal elementer i String[] for at jeg ikke får
+     * nullPointerException
      * @return
      */
     public String[] laesDataOgSplit() {
-        String besked = consoleReader.laesInputFraConsole();
+        String b = consoleReader.laesInputFraConsole();
         String[] gemtIArray = new String[2];
 
         //begge elementer, fordi ellers nullpointer
-        if (besked.equals("QUIT")) {
-            gemtIArray[0] = besked;
-            gemtIArray[1] = besked;
+        if (b.equals("QUIT")) {
+            gemtIArray[0] = b;
+            gemtIArray[1] = b;
             return gemtIArray;
         }
+
         //substring returnerer en ny String
-        else if (besked.length() < 5 || !besked.substring(0,5).equals("DATA ") || !erGyldigBesked(besked) || !besked.contains(":")) {
-            gemtIArray[0] = "FEJL";
+        else if (b.length() < 5 || !b.substring(0,5).equals("DATA ") || !erGyldigBesked(b) || !b.contains(": ")) {
+            gemtIArray[0] = b;
             gemtIArray[1] = "FEJL";
             return gemtIArray;
         }
         else {
-            //splitter username og besked med split og gemmer i array
-            besked = besked.replace("DATA ", "");
-            if (besked.contains(":")) gemtIArray = besked.split(":");
-
+            //splitter username og b med split og gemmer i array
+            b = b.replace("DATA ", "");
+            if (b.contains(":")) gemtIArray = b.split(":");
             return gemtIArray;
         }
 
